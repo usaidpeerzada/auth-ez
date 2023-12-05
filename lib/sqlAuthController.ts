@@ -1,12 +1,12 @@
 import dotenv from 'dotenv';
 import { AuthController } from './authController';
-import { GetUser, SaveUser, UpdateUser, User } from './types';
+import { GetUser, SaveUser, UpdateUser, IUser } from './types';
 
 dotenv.config();
 
 export class CreateSqlAuthController extends AuthController {
-  async getUser(data: GetUser): Promise<User> {
-    let user: User;
+  async getUser(data: GetUser): Promise<IUser> {
+    let user: IUser;
     if (data?.email) {
       user = await this.User.findOne({ where: { email: data.email } });
     } else if (data?.username) {
@@ -16,12 +16,12 @@ export class CreateSqlAuthController extends AuthController {
     }
     return user?.dataValues;
   }
-  async saveUser(params: SaveUser): Promise<User> {
+  async saveUser(params: SaveUser): Promise<IUser> {
     const newUser = await this.User.create(params);
     await newUser.save();
     return newUser;
   }
-  async updateUser(params: UpdateUser): Promise<User> {
+  async updateUser(params: UpdateUser): Promise<IUser> {
     const updateUser = await this.User.update(
       { password: params?.password },
       { where: { id: params.id } },

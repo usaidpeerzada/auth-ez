@@ -8,7 +8,7 @@ import {
   hashPassword,
   verifyToken,
 } from './utils';
-import { Config } from './config';
+import { Config } from './types';
 import {
   EmailOptions,
   EmailParams,
@@ -17,7 +17,7 @@ import {
   SaveUser,
   SuccessResponse,
   UpdateUser,
-  User,
+  IUser,
 } from './types';
 import EmailService from './emails/emailService';
 import ResendEmailService from './emails/resendEmailService';
@@ -80,15 +80,16 @@ export abstract class AuthController implements AuthEZDataStore {
     return hashedPassword;
   }
 
-  abstract saveUser(params: SaveUser): Promise<User>;
-  abstract getUser(params: GetUser): Promise<User>;
-  abstract updateUser(params: UpdateUser): Promise<User>;
+  abstract saveUser(params: SaveUser): Promise<IUser>;
+  abstract getUser(params: GetUser): Promise<IUser>;
+  abstract updateUser(params: UpdateUser): Promise<IUser>;
 
   async sendEmail(params: object): Promise<void | boolean> {
     if (
       this.emailOptions &&
       Object.keys(this.emailOptions).length &&
-      this.emailOptions.emailType !== ''
+      this.emailOptions.emailType !== '' &&
+      this.emailOptions.emailSdk
     ) {
       let emailService: any;
       if (this.emailOptions?.emailType === emailTypes.NODEMAILER) {
@@ -105,8 +106,6 @@ export abstract class AuthController implements AuthEZDataStore {
         emailService = this.emailOptions.emailService;
       }
       emailService.sendEmail(params);
-    } else {
-      return false;
     }
   }
 
@@ -255,10 +254,6 @@ export abstract class AuthController implements AuthEZDataStore {
           };
         }
         this.sendEmail(mailParams);
-        if ((await this.sendEmail(mailParams)) === false) {
-          this.clientError(res, { error: 'Email options not set.' });
-          return;
-        }
         this.success(res, { message: 'Password reset email sent' });
       } else {
         this.notFound(res, { error: 'User not found' });

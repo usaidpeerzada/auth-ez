@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { GetUser, SaveUser, UpdateUser, User } from './types';
+import { GetUser, SaveUser, UpdateUser, IUser } from './types';
 
 export default interface AuthEZDataStore {
   comparePassword(
@@ -8,9 +8,9 @@ export default interface AuthEZDataStore {
   ): Promise<boolean>;
   generateToken(payload: object, userOptions: object): Promise<void>;
   hashPassword(password: string, options: object): string;
-  getUser(params: GetUser): Promise<User>;
-  saveUser(params: SaveUser): Promise<User>;
-  updateUser(params: UpdateUser): Promise<User>;
+  getUser(params: GetUser): Promise<IUser>;
+  saveUser(params: SaveUser): Promise<IUser>;
+  updateUser(params: UpdateUser): Promise<IUser>;
   created(res: Response | object, message: object | string): Response;
   success(res: Response | object, message: object | string): Response;
   error(res: Response | object, error: object | string): Response;
