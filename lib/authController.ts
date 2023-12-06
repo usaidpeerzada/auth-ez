@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import express, { Request, Response, Router } from 'express';
-import AuthEZDataStore from './authEZDataStore';
+import IAuthEZDataStore from './authEZDataStore';
 import {
   comparePasswords,
-  createResponse,
   generateToken,
   hashPassword,
   verifyToken,
@@ -12,10 +11,8 @@ import { Config } from './types';
 import {
   EmailOptions,
   EmailParams,
-  ErrResponse,
   GetUser,
   SaveUser,
-  SuccessResponse,
   UpdateUser,
   IUser,
 } from './types';
@@ -24,12 +21,14 @@ import ResendEmailService from './emails/resendEmailService';
 import { emailTypes } from './constants';
 import NodemailerEmailService from './emails/nodemailerEmailService';
 import { protectedRoutes } from './utils';
-
-export abstract class AuthController implements AuthEZDataStore {
-  config: Config;
-  router: Router;
-  emailOptions: EmailOptions;
+import ResponseController from './responseController';
+export abstract class AuthController implements IAuthEZDataStore {
+  private config: Config;
+  private router: Router;
+  private emailOptions: EmailOptions;
+  private response: ResponseController;
   User;
+
   constructor(config: Config) {
     this.config = config;
     const routes = {
@@ -43,13 +42,13 @@ export abstract class AuthController implements AuthEZDataStore {
         config.routeNames?.resetPasswordRoute || '/reset-password',
       signupRoute: config.routeNames?.signupRoute || '/register',
       logoutRoute: config.routeNames?.logoutRoute || '/logout',
-      // test: '/test',
     };
     this.router = express.Router();
     this.router.use(express.json());
     this.router.use(protectedRoutes(routes));
     this.User = config.User;
     this.emailOptions = this.config.emailOptions;
+    this.response = new ResponseController();
     this.router.post(
       `${routes.emailLoginRoute}`,
       this.loginWithEmail.bind(this),
@@ -109,42 +108,6 @@ export abstract class AuthController implements AuthEZDataStore {
     }
   }
 
-  created(res: Response, message: SuccessResponse): Response {
-    return createResponse(res, 201, message);
-  }
-
-  success(res: Response, message: SuccessResponse): Response {
-    return createResponse(res, 200, message);
-  }
-
-  error(res: Response, error: ErrResponse): Response {
-    return createResponse(res, 500, error);
-  }
-
-  unauthorized(res: Response, message: ErrResponse): Response {
-    return createResponse(res, 401, message);
-  }
-
-  conflict(res: Response, message: ErrResponse): Response {
-    return createResponse(res, 409, message);
-  }
-
-  clientError(res: Response, message: ErrResponse): Response {
-    return createResponse(res, 400, message);
-  }
-
-  forbidden(res: Response, message: ErrResponse): Response {
-    return createResponse(res, 403, message);
-  }
-
-  notFound(res: Response, message: ErrResponse): Response {
-    return createResponse(res, 404, message);
-  }
-
-  tooMany(res: Response, message: ErrResponse): Response {
-    return createResponse(res, 429, message);
-  }
-
   async comparePassword(
     plainPassword: string,
     hashedPassword: string,
@@ -175,11 +138,13 @@ export abstract class AuthController implements AuthEZDataStore {
       const { email, password } = req.body;
       const user = await this.getUser({ email });
       if (!email || !password) {
-        return this.clientError(res, { error: 'All fields are required!' });
+        return this.response.clientError(res, {
+          error: 'All fields are required!',
+        });
       }
       console.log('the user inside authcontroller -> ', { user, password });
       if (!user) {
-        return this.notFound(res, { error: 'User not found!' });
+        return this.response.notFound(res, { error: 'User not found!' });
       }
       const comparePasswordWithHash = await this.comparePassword(
         password,
@@ -191,14 +156,19 @@ export abstract class AuthController implements AuthEZDataStore {
           { userId: user._id || user.id },
           this.config?.tokenOptions,
         );
-        return this.success(res, { message: 'Login successful', token });
+        return this.response.success(res, {
+          message: 'Login successful',
+          token,
+        });
       } else {
-        return this.unauthorized(res, { error: 'Invalid credentials' });
+        return this.response.unauthorized(res, {
+          error: 'Invalid credentials',
+        });
       }
     } catch (err) {
       this.config.enableLogs &&
         console.info(`Error in route: ${req.path}: `, err);
-      return this.error(res, { error: 'Internal Server Error' });
+      return this.response.error(res, { error: 'Internal Server Error' });
     }
   }
 
@@ -207,7 +177,7 @@ export abstract class AuthController implements AuthEZDataStore {
       const { username, password } = req.body;
       const user = await this.getUser({ username });
       if (!user) {
-        return this.notFound(res, { error: 'User not found!' });
+        return this.response.notFound(res, { error: 'User not found!' });
       }
       const comparePasswordWithHash = await this.comparePassword(
         password,
@@ -218,13 +188,18 @@ export abstract class AuthController implements AuthEZDataStore {
           { userId: user._id },
           this.config?.tokenOptions,
         );
-        return this.success(res, { message: 'Login successful', token });
+        return this.response.success(res, {
+          message: 'Login successful',
+          token,
+        });
       } else {
-        return this.unauthorized(res, { error: 'Invalid credentials' });
+        return this.response.unauthorized(res, {
+          error: 'Invalid credentials',
+        });
       }
     } catch (error) {
       this.config.enableLogs && console.info(`Error in ${req.path}: `, error);
-      return this.error(res, { error: 'Internal Server Error' });
+      return this.response.error(res, { error: 'Internal Server Error' });
     }
   }
 
@@ -254,13 +229,13 @@ export abstract class AuthController implements AuthEZDataStore {
           };
         }
         this.sendEmail(mailParams);
-        this.success(res, { message: 'Password reset email sent' });
+        this.response.success(res, { message: 'Password reset email sent' });
       } else {
-        this.notFound(res, { error: 'User not found' });
+        this.response.notFound(res, { error: 'User not found' });
       }
     } catch (error) {
       this.config.enableLogs && console.info(`Error in ${req.path}: `, error);
-      this.error(res, { error: 'Internal Server Error' });
+      this.response.error(res, { error: 'Internal Server Error' });
     }
   }
 
@@ -278,13 +253,13 @@ export abstract class AuthController implements AuthEZDataStore {
           id: user?.id || user?._id,
           password: hashedPassword,
         });
-        this.success(res, { message: 'Password reset successful' });
+        this.response.success(res, { message: 'Password reset successful' });
       } else {
-        this.notFound(res, { error: 'User not found' });
+        this.response.notFound(res, { error: 'User not found' });
       }
     } catch (error) {
       this.config.enableLogs && console.info(`Error in ${req.path}: `, error);
-      this.error(res, { error: 'Internal Server Error' });
+      this.response.error(res, { error: 'Internal Server Error' });
     }
   }
 
@@ -292,7 +267,7 @@ export abstract class AuthController implements AuthEZDataStore {
     try {
       const { username, email, password } = req.body;
       if (!email || !username || !password) {
-        this.clientError(res, { error: 'All fields are required!' });
+        this.response.clientError(res, { error: 'All fields are required!' });
         return;
       }
       const existingUser = await this.getUser({
@@ -300,7 +275,9 @@ export abstract class AuthController implements AuthEZDataStore {
         username,
       });
       if (existingUser) {
-        this.clientError(res, { error: 'Username or email already exists' });
+        this.response.clientError(res, {
+          error: 'Username or email already exists',
+        });
         return;
       }
       const hashedPassword = this.config?.hashPassword
@@ -335,12 +312,15 @@ export abstract class AuthController implements AuthEZDataStore {
         }
         this.sendEmail(mailParams);
       }
-      this.created(res, {
-        message: 'User registered successfully.',
+      this.response.created(res, {
+        message: 'User registered successfully ma man.',
       });
+      // this.created(res, {
+      //   message: 'User registered successfully.',
+      // });
     } catch (error) {
       this.config.enableLogs && console.info(`Error in ${req.path}: `, error);
-      this.error(res, { error: 'Internal Server Error' });
+      this.response.error(res, { error: 'Internal Server Error' });
     }
   }
 
@@ -350,11 +330,13 @@ export abstract class AuthController implements AuthEZDataStore {
       const payload = verifyToken(token.toString());
       const user = await this.getUser({ id: payload.userId });
       if (user) {
-        this.success(res, { message: 'User verification successful!' });
+        this.response.success(res, {
+          message: 'User verification successful!',
+        });
       }
     } catch (error) {
       this.config.enableLogs && console.info(`Error in ${req.path}: `, error);
-      this.error(res, { error: 'Internal Server Error' });
+      this.response.error(res, { error: 'Internal Server Error' });
     }
   }
 
@@ -362,13 +344,13 @@ export abstract class AuthController implements AuthEZDataStore {
     try {
       const token = req.header('Authorization')?.replace('Bearer ', '');
       if (!token) {
-        this.unauthorized(res, { error: 'Unauthorized' });
+        this.response.unauthorized(res, { error: 'Unauthorized' });
       }
       res.cookie('token', '', { expires: new Date(0) });
-      this.success(res, { message: 'Logout successful' });
+      this.response.success(res, { message: 'Logout successful' });
     } catch (error) {
       this.config.enableLogs && console.info(`Error in ${req.path}: `, error);
-      this.error(res, { error: 'Internal Server Error' });
+      this.response.error(res, { error: 'Internal Server Error' });
     }
   }
 
