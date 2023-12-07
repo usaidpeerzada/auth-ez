@@ -313,11 +313,8 @@ export abstract class AuthController implements IAuthEZDataStore {
         this.sendEmail(mailParams);
       }
       this.response.created(res, {
-        message: 'User registered successfully ma man.',
+        message: 'User registered successfully',
       });
-      // this.created(res, {
-      //   message: 'User registered successfully.',
-      // });
     } catch (error) {
       this.config.enableLogs && console.info(`Error in ${req.path}: `, error);
       this.response.error(res, { error: 'Internal Server Error' });
