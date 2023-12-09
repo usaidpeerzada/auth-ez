@@ -14,11 +14,13 @@ export default class NodemailerEmailService extends EmailService {
     const { toMail, mailType, url } = params;
     let { mailSubject, mailBody } = params;
     if (mailType === 'verification') {
-      mailSubject =  mailSubject || 'Verify your email';
-      mailBody = mailBody || `Click <a href="${url}">here</a> to verify your email.`;
+      mailSubject = mailSubject || 'Verify your email';
+      mailBody =
+        mailBody || `Click <a href="${url}">here</a> to verify your email.`;
     } else if (mailType === 'reset') {
-      mailSubject =  mailSubject ||'Reset your password';
-      mailBody =  mailBody || `Click <a href="${url}">here</a> to reset your password.`;
+      mailSubject = mailSubject || 'Reset your password';
+      mailBody =
+        mailBody || `Click <a href="${url}">here</a> to reset your password.`;
     }
     const mailOptions = {
       from: process.env.NODEMAILER_FROM_USER,

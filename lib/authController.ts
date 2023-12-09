@@ -6,8 +6,8 @@ import {
   hashPassword,
   verifyToken,
 } from './utils';
-import { Config } from './types';
 import {
+  Config,
   EmailOptions,
   EmailParams,
   GetUser,
@@ -131,7 +131,7 @@ export abstract class AuthController implements IAuthEZDataStore {
       if (!user) {
         return this.response.notFound(res, { error: 'User not found!' });
       }
-      const comparePasswordWithHash = await this.comparePassword(
+      const comparePasswordWithHash = this.comparePassword(
         password,
         user?.password,
       );
@@ -163,7 +163,7 @@ export abstract class AuthController implements IAuthEZDataStore {
       if (!user) {
         return this.response.notFound(res, { error: 'User not found!' });
       }
-      const comparePasswordWithHash = await this.comparePassword(
+      const comparePasswordWithHash = this.comparePassword(
         password,
         user?.password,
       );
