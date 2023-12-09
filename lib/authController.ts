@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import express, { Request, Response, Router } from 'express';
 import IAuthEZDataStore from './authEZDataStore';
 import {
@@ -23,11 +22,11 @@ import NodemailerEmailService from './emails/nodemailerEmailService';
 import { protectedRoutes } from './utils';
 import ResponseController from './responseController';
 export abstract class AuthController implements IAuthEZDataStore {
-  private config: Config;
-  private router: Router;
-  private emailOptions: EmailOptions;
-  private response: ResponseController;
-  User;
+  private readonly config: Config;
+  private readonly router: Router;
+  private readonly emailOptions: EmailOptions;
+  private readonly response: ResponseController;
+  readonly User;
 
   constructor(config: Config) {
     this.config = config;
@@ -69,21 +68,11 @@ export abstract class AuthController implements IAuthEZDataStore {
     this.router.post(`${routes.logoutRoute}`, this.logoutRoute.bind(this));
   }
 
-  hashPassword(password: string, options: object): string {
-    let hashedPassword: string;
-    if (this.config.hashPassword) {
-      hashedPassword = this.config.hashPassword(password, options);
-    } else {
-      hashedPassword = hashPassword(password);
-    }
-    return hashedPassword;
-  }
-
   abstract saveUser(params: SaveUser): Promise<IUser>;
   abstract getUser(params: GetUser): Promise<IUser>;
   abstract updateUser(params: UpdateUser): Promise<IUser>;
 
-  async sendEmail(params: object): Promise<void | boolean> {
+  private async sendEmail(params: object): Promise<void | boolean> {
     if (
       this.emailOptions &&
       Object.keys(this.emailOptions).length &&
@@ -108,29 +97,26 @@ export abstract class AuthController implements IAuthEZDataStore {
     }
   }
 
-  async comparePassword(
+  private async hashPassword(password: string): Promise<string> {
+    return this.config.hashPassword
+      ? this.config.hashPassword(password)
+      : hashPassword(password);
+  }
+
+  private async comparePassword(
     plainPassword: string,
     hashedPassword: string,
   ): Promise<boolean> {
-    let comparedPassword;
-    if (this.config.comparePassword) {
-      comparedPassword = await this.config.comparePassword(
-        plainPassword,
-        hashedPassword,
-      );
-    } else {
-      console.log('compare password -> ', { plainPassword, hashedPassword });
-      comparedPassword = await comparePasswords(plainPassword, hashedPassword);
-    }
-    return comparedPassword;
+    const compareFunction = this.config.comparePassword ?? comparePasswords;
+    const comparePassword = await compareFunction(
+      plainPassword,
+      hashedPassword,
+    );
+    return Boolean(comparePassword);
   }
 
-  generateToken(payload: object, userOptions: object): Promise<void> {
-    if (this.config.generateToken) {
-      return this.config.generateToken(payload, userOptions);
-    } else {
-      return generateToken(payload, userOptions);
-    }
+  private generateToken(payload: object, userOptions: object): Promise<void> {
+    return generateToken(payload, userOptions);
   }
 
   async loginWithEmail(req: Request, res: Response): Promise<Response> {
@@ -142,7 +128,6 @@ export abstract class AuthController implements IAuthEZDataStore {
           error: 'All fields are required!',
         });
       }
-      console.log('the user inside authcontroller -> ', { user, password });
       if (!user) {
         return this.response.notFound(res, { error: 'User not found!' });
       }
@@ -150,7 +135,6 @@ export abstract class AuthController implements IAuthEZDataStore {
         password,
         user?.password,
       );
-      console.log('compared password: ', comparePasswordWithHash);
       if (user && comparePasswordWithHash) {
         const token = this.generateToken(
           { userId: user._id || user.id },
@@ -186,7 +170,7 @@ export abstract class AuthController implements IAuthEZDataStore {
       if (user && comparePasswordWithHash) {
         const token = generateToken(
           { userId: user._id },
-          this.config?.tokenOptions,
+          this.config.tokenOptions,
         );
         return this.response.success(res, {
           message: 'Login successful',
@@ -246,9 +230,7 @@ export abstract class AuthController implements IAuthEZDataStore {
       const payload = verifyToken(token.toString());
       const user = await this.getUser({ id: payload.userId });
       if (user) {
-        const confirmUserId = user?.id || user?._id === payload.userId;
-        console.log('user in reset ', user, confirmUserId);
-        const hashedPassword = await hashPassword(newPassword);
+        const hashedPassword = await this.hashPassword(newPassword);
         await this.updateUser({
           id: user?.id || user?._id,
           password: hashedPassword,
@@ -280,10 +262,7 @@ export abstract class AuthController implements IAuthEZDataStore {
         });
         return;
       }
-      const hashedPassword = this.config?.hashPassword
-        ? await this.config?.hashPassword(password)
-        : await hashPassword(password);
-      console.log('>>>>', hashedPassword);
+      const hashedPassword = await this.hashPassword(password);
       const user = await this.saveUser({
         username,
         email,
@@ -315,22 +294,6 @@ export abstract class AuthController implements IAuthEZDataStore {
       this.response.created(res, {
         message: 'User registered successfully',
       });
-    } catch (error) {
-      this.config.enableLogs && console.info(`Error in ${req.path}: `, error);
-      this.response.error(res, { error: 'Internal Server Error' });
-    }
-  }
-
-  async verifyEmailRoute(req: Request, res: Response): Promise<void> {
-    try {
-      const { token } = req.query;
-      const payload = verifyToken(token.toString());
-      const user = await this.getUser({ id: payload.userId });
-      if (user) {
-        this.response.success(res, {
-          message: 'User verification successful!',
-        });
-      }
     } catch (error) {
       this.config.enableLogs && console.info(`Error in ${req.path}: `, error);
       this.response.error(res, { error: 'Internal Server Error' });

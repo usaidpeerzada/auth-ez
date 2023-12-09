@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 
-export function hashPassword(password: string, saltRounds = 10): string {
+export function hashPassword(password: string, saltRounds = 16): string {
   return bcrypt.hash(password, saltRounds);
 }
 
