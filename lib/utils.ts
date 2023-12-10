@@ -7,10 +7,10 @@ export function hashPassword(password: string, saltRounds = 16): string {
   return bcrypt.hash(password, saltRounds);
 }
 
-export async function comparePasswords(
+export function comparePasswords(
   plainPassword: string,
   hashedPassword: string,
-): Promise<void> {
+): boolean {
   return bcrypt.compare(plainPassword, hashedPassword);
 }
 
@@ -29,7 +29,6 @@ export function generateToken(
 export function verifyToken(token: string): any {
   try {
     const secretKey = process.env.AUTH_EZ_JWT_SECRET_KEY;
-    console.log('jwt.verify(token, secretKey);', jwt.verify(token, secretKey));
     return jwt.verify(token, secretKey);
   } catch (err) {
     return { message: err, status: 401 };

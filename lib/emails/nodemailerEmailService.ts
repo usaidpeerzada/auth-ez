@@ -23,7 +23,7 @@ export default class NodemailerEmailService extends EmailService {
         mailBody || `Click <a href="${url}">here</a> to reset your password.`;
     }
     const mailOptions = {
-      from: process.env.NODEMAILER_FROM_USER,
+      from: process.env.FROM_EMAIL,
       to: toMail,
       subject: mailSubject,
       html: mailBody,

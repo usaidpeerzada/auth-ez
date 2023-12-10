@@ -4,7 +4,6 @@
     "module": "node16",
     "lib": ["ES2022"],
     "moduleResolution": "node16",
-    "rootDir": ".",
     "declaration": true,
     "declarationMap": true,
     "outDir": "build",
@@ -21,6 +20,6 @@
     "noImplicitThis": false,
     "strictNullChecks": false
   },
-  "include": ["./lib/**/*", ".eslintrc.json"],
-  "exclude": ["node_modules", "build", "build/lib"]
+  "include": ["./lib/**/*"],
+  "exclude": ["node_modules", "./build", "./test"]
 }

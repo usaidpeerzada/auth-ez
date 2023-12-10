@@ -19,6 +19,7 @@ Install the required packages:
 ```bash
 npm install auth-ez
 ```
+Inside your .env add ```AUTH_EZ_JWT_SECRET_KEY``` (required), ```BASE_URL```  and ```FROM_EMAIL``` for email. (optional).
 
 Based on the project import CreateMongoAuthController or CreateSqlAuthController:
 
