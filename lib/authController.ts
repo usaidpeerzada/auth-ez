@@ -97,10 +97,14 @@ export abstract class AuthController implements IAuthEZDataStore {
     }
   }
 
-  private async hashPassword(password: string): Promise<string> {
-    return this.config.hashPassword
-      ? this.config.hashPassword(password)
-      : hashPassword(password);
+  hashPassword(password: string, options?: object): string {
+    let hashedPassword: string;
+    if (this.config.hashPassword) {
+      hashedPassword = this.config.hashPassword(password, options);
+    } else {
+      hashedPassword = hashPassword(password);
+    }
+    return hashedPassword;
   }
 
   private async comparePassword(
@@ -122,16 +126,16 @@ export abstract class AuthController implements IAuthEZDataStore {
   async loginWithEmail(req: Request, res: Response): Promise<Response> {
     try {
       const { email, password } = req.body;
-      const user = await this.getUser({ email });
       if (!email || !password) {
         return this.response.clientError(res, {
           error: 'All fields are required!',
         });
       }
+      const user = await this.getUser({ email });
       if (!user) {
         return this.response.notFound(res, { error: 'User not found!' });
       }
-      const comparePasswordWithHash = this.comparePassword(
+      const comparePasswordWithHash = await this.comparePassword(
         password,
         user?.password,
       );
@@ -159,11 +163,16 @@ export abstract class AuthController implements IAuthEZDataStore {
   async loginWithUsername(req: Request, res: Response): Promise<Response> {
     try {
       const { username, password } = req.body;
+      if (!username || !password) {
+        return this.response.clientError(res, {
+          error: 'All fields are required!',
+        });
+      }
       const user = await this.getUser({ username });
       if (!user) {
         return this.response.notFound(res, { error: 'User not found!' });
       }
-      const comparePasswordWithHash = this.comparePassword(
+      const comparePasswordWithHash = await this.comparePassword(
         password,
         user?.password,
       );
@@ -187,7 +196,7 @@ export abstract class AuthController implements IAuthEZDataStore {
     }
   }
 
-  async forgotPasswordRoute(req: Request, res: Response): Promise<void> {
+  async forgotPasswordRoute(req: Request, res: Response): Promise<Response> {
     try {
       const { email } = req.body;
       const user = await this.getUser({ email });
@@ -213,13 +222,15 @@ export abstract class AuthController implements IAuthEZDataStore {
           };
         }
         this.sendEmail(mailParams);
-        this.response.success(res, { message: 'Password reset email sent' });
+        return this.response.success(res, {
+          message: 'Password reset email sent',
+        });
       } else {
-        this.response.notFound(res, { error: 'User not found' });
+        return this.response.notFound(res, { error: 'User not found' });
       }
     } catch (error) {
       this.config.enableLogs && console.info(`Error in ${req.path}: `, error);
-      this.response.error(res, { error: 'Internal Server Error' });
+      return this.response.error(res, { error: 'Internal Server Error' });
     }
   }
 
