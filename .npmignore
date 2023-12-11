@@ -2,4 +2,4 @@ test/
 tsconfig.json
 .prettierrc
 .eslintrc.json  
-lib/
+src/
