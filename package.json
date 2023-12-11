@@ -20,13 +20,11 @@
   "name": "auth-ez",
   "version": "1.0.0",
   "description": "The purpose of this package is to make authentication easy.",
-  "main": "lib/index.ts",
-  "keywords": ["node", "auth", "authentication"],
-  "directories": {
-    "lib": "lib"
-  },
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "keywords": ["node", "express", "auth", "authentication", "bcrypt", "mongoose", "sequelize"],
   "scripts": {
-    "start": "node build/lib/index.js",
+    "start": "node lib/index.js",
     "prettier": "prettier --config .prettierrc --write .",
     "build": "tsc -p tsconfig.json",
     "build:release": "npm run clean && tsc -p tsconfig.release.json",
