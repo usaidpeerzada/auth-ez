@@ -19,7 +19,7 @@
   },
   "name": "auth-ez",
   "version": "1.0.1",
-  "description": "The purpose of this package is to make authentication easy.",
+  "description": "Simple and easy user authentication.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "keywords": [
