@@ -9,7 +9,7 @@ export interface IUser {
 }
 
 export type Config = {
-  User: IUser;
+  User;
   enableLogs?: boolean;
   hashPassword?;
   comparePassword?: typeof Function;
