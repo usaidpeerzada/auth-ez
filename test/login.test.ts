@@ -22,7 +22,7 @@ describe('Login API Tests', () => {
   it('should successfully login with email and return a token', (done) => {
     request(app)
       .post('/auth/login-with-email')
-      .send({ email: 'usaidpeerzada@gmail.com', password: 'test123' })
+      .send({ email: 'test@test.com', password: 'test123' })
       .end((err, res) => {
         console.log(err);
         expect(res).to.have.status(200);
@@ -35,7 +35,7 @@ describe('Login API Tests', () => {
   it('should successfully login with username and return a token', (done) => {
     request(app)
       .post('/auth/login-with-username')
-      .send({ username: 'email', password: 'toin' })
+      .send({ username: 'tester', password: 'test123' })
       .end((err, res) => {
         console.log(err);
         expect(res).to.have.status(200);
