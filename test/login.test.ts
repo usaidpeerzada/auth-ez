@@ -22,7 +22,7 @@ describe('Login API Tests', () => {
   it('should successfully login with email and return a token', (done) => {
     request(app)
       .post('/auth/login-with-email')
-      .send({ email: 'usaidpeerzada@gmail.com', password: 'toin' })
+      .send({ email: 'usaidpeerzada@gmail.com', password: 'test123' })
       .end((err, res) => {
         console.log(err);
         expect(res).to.have.status(200);
