@@ -18,11 +18,19 @@
     "typescript": "^5.3.2"
   },
   "name": "auth-ez",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "The purpose of this package is to make authentication easy.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
-  "keywords": ["node", "express", "auth", "authentication", "bcrypt", "mongoose", "sequelize"],
+  "keywords": [
+    "node",
+    "express",
+    "auth",
+    "authentication",
+    "bcrypt",
+    "mongoose",
+    "sequelize"
+  ],
   "scripts": {
     "start": "node lib/index.js",
     "prettier": "prettier --config .prettierrc --write .",
