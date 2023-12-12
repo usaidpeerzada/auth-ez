@@ -296,8 +296,8 @@ export abstract class AuthController implements IAuthEZDataStore {
         ) {
           mailParams = {
             ...mailParams,
-            mailSubject: this.emailOptions?.forgotPasswordSubject,
-            mailBody: this.emailOptions?.forgotPasswordBody,
+            mailSubject: this.emailOptions?.verificationMailSubject,
+            mailBody: this.emailOptions?.verificationMailBody,
           };
         }
         this.sendEmail(mailParams);

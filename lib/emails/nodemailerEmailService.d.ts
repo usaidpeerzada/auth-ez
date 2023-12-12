@@ -1,6 +1,5 @@
 import { EmailParams } from '../types';
-import EmailService from './emailService';
-export default class NodemailerEmailService extends EmailService {
+export default class NodemailerEmailService {
     client: {
         sendMail?: any;
     };

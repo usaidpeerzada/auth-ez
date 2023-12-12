@@ -1,12 +1,9 @@
 import { EmailParams } from '../types';
-import EmailService from './emailService';
-
-export default class NodemailerEmailService extends EmailService {
+export default class NodemailerEmailService {
   client: {
     sendMail?;
   };
   constructor(config = {}) {
-    super(config);
     this.client = config;
   }
 
@@ -38,5 +35,3 @@ export default class NodemailerEmailService extends EmailService {
     });
   }
 }
-
-module.exports = NodemailerEmailService;

@@ -1,5 +1,4 @@
-import EmailService from './emailService';
-export default class ResendEmailService extends EmailService {
+export default class ResendEmailService {
     client: {
         emails?: any;
     };

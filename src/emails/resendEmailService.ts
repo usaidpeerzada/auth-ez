@@ -1,11 +1,8 @@
-import EmailService from './emailService';
-
-export default class ResendEmailService extends EmailService {
+export default class ResendEmailService {
   client: {
     emails?;
   };
   constructor(config = {}) {
-    super(config);
     this.client = config;
   }
 
@@ -35,5 +32,3 @@ export default class ResendEmailService extends EmailService {
     }
   }
 }
-
-module.exports = ResendEmailService;
