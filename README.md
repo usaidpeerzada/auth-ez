@@ -1,6 +1,7 @@
 ## Overview
 
-#### auth-ez is a package designed to handle authentication-related functionality within a Node.js application using Express. It provides routes and methods for user authentication, registration, password reset, and email verification. This document outlines the structure, methods, and usage of the package.
+ auth-ez is a package designed to handle authentication-related functionality (token based) within a Node.js application using Express. It provides routes and methods for user authentication, registration, password reset, and email verification. This document outlines the structure, methods, and usage of the package.
+
 
 ## Prerequisites
 
@@ -45,16 +46,20 @@ const authController = new CreateMongoAuthController(config).getRouter();
 6. emailOptions: Email configuration options (optional).
 7. enableLogs: Enable logging (optional).
 
+## Email
+
+By default, auth-ez provides support for [Resend](https://resend.com/) email API (for forgot-password and verify-email). More support will be added soon. (nodemailer is under testing)
+
 ## Routes
 
-auth-ez provides the following authentication routes:
+auth-ez provides the following authentication routes which takes body in `application/json` format:
 
-- `POST /login-with-email`: Login with email and password.
-- `POST /login-with-username`: Login with username and password.
-- `POST /forgot-password`: Request a password reset email.
-- `POST /reset-password`: Reset password with a valid token.
-- `POST /register`: User registration.
-- `POST /logout`: Logout.
+- `POST /login-with-email`: Login with email and password - Body: `email, password`.
+- `POST /login-with-username`: Login with username and password - Body: `username, password`.
+- `POST /forgot-password`: Request a password reset email - Body: `email`.
+- `POST /reset-password`: Reset password with a valid token - Body: `newPassword`, have to pass token as query param: `/reset-password?token=your_generated_token`.
+- `POST /register`: User registration - Body: `username, email and password`.
+- `POST /logout`: Logout - Pass current **Bearer token** and it will expire the token.
  > You can rename the routes or use these.
 
 ## Methods
@@ -133,6 +138,13 @@ app.listen(3000, () => {
   console.log('Server is running on port 3000');
 });
 ```
+## Tests
+Chai and Mocha has been used for testing purpose, here's how you can test this package:
+1) Import express app context and User model from your local express app into the test files.
+2) Run `npm run test` to test.
+
+# Contact
+This is the initial phase of auth-ez package, if you find any bugs or have any suggestions please feel free to contact me on my: [email](mailto:usaid@usaid.dev) or create an issue on GitHub repository [auth-ez](https://www.github.com/usaidpeerzada/auth-ez).
 
 ## Conclusion
 
