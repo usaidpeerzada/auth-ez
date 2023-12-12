@@ -18,13 +18,13 @@
     "typescript": "^5.3.2"
   },
   "name": "auth-ez",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Simple and easy user authentication.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "repository": {
-  "type": "git",
-  "url": "https://github.com/usaidpeerzada/auth-ez"
+    "type": "git",
+    "url": "https://github.com/usaidpeerzada/auth-ez"
   },
   "keywords": [
     "node",
