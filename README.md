@@ -2,6 +2,7 @@
 
  auth-ez is a package designed to handle authentication-related functionality (token based) within a Node.js application using Express. It provides routes and methods for user authentication, registration, password reset, and email verification. This document outlines the structure, methods, and usage of the package.
 
+> This is the initial phase of auth-ez package, if you find any bugs or have any suggestions please feel free to contact me on my: [email](mailto:usaid@usaid.dev) or create an issue on GitHub repository [auth-ez](https://www.github.com/usaidpeerzada/auth-ez). Currently mongoose (MongoDB) and Sequelize (SQL) are supported. Prisma support will be added soon.
 
 ## Prerequisites
 
@@ -143,8 +144,6 @@ Chai and Mocha has been used for testing purpose, here's how you can test this p
 1) Import express app context and User model from your local express app into the test files.
 2) Run `npm run test` to test.
 
-# Contact
-This is the initial phase of auth-ez package, if you find any bugs or have any suggestions please feel free to contact me on my: [email](mailto:usaid@usaid.dev) or create an issue on GitHub repository [auth-ez](https://www.github.com/usaidpeerzada/auth-ez).
 
 ## Conclusion
 
