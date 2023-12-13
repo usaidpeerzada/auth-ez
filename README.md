@@ -26,7 +26,7 @@ Inside your .env add ```AUTH_EZ_JWT_SECRET_KEY``` (required), ```BASE_URL```  an
 Based on the project import CreateMongoAuthController or CreateSqlAuthController:
 
 ```typescript
-import { CreateMongoAuthContrller, CreateSqlAuthController } from 'auth-ez';
+import { CreateMongoAuthController, CreateSqlAuthController } from 'auth-ez';
 ```
 
 ```typescript
