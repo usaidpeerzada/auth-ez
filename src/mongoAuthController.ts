@@ -1,10 +1,6 @@
-import dotenv from 'dotenv';
-import { AuthController } from './authController';
+import AuthController from './authController';
 import { GetUser, SaveUser, UpdateUser, IUser } from './types';
-
-dotenv.config();
-
-export class CreateMongoAuthController extends AuthController {
+export default class CreateMongoAuthController extends AuthController {
   async getUser(data: GetUser): Promise<IUser> {
     let user: IUser;
     if (data?.email) {

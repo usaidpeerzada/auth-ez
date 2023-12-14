@@ -5,11 +5,8 @@ import { request, expect } from 'chai';
 import { describe, it } from 'mocha';
 import app from '../../auth-ez-examples/auth-ez-mongo/index';
 import { User } from '../../auth-ez-examples/auth-ez-mongo/user.model';
-import { CreateMongoAuthController } from '../lib/mongoAuthController';
+import CreateMongoAuthController from '../lib/mongoAuthController';
 // import { Config } from '../lib/types'; // Update this path accordingly
-import dotenv from 'dotenv';
-
-dotenv.config();
 const config = {
   User,
   // Your configuration options here

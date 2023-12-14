@@ -8,9 +8,9 @@
 
 <p>Before using auth-ez, ensure the following dependencies are installed:</p>
 
-- Node.js
-- TypeScript
-- Express
+- [NodeJS](https://nodejs.org/en)
+- [Express](https://expressjs.com/)
+- [Dotenv](https://github.com/motdotla/dotenv#readme)
 
 ## Installation
 
@@ -21,7 +21,7 @@ Install the required packages:
 ```bash
 npm install auth-ez
 ```
-Inside your .env add ```AUTH_EZ_JWT_SECRET_KEY``` (required), ```BASE_URL```  and ```FROM_EMAIL``` for email. (optional).
+Inside your .env add ```AUTH_EZ_JWT_SECRET_KEY``` (required), ```BASE_URL```  and ```FROM_EMAIL``` for email (optional).
 
 Based on the project import CreateMongoAuthController or CreateSqlAuthController:
 
@@ -42,14 +42,13 @@ const authController = new CreateMongoAuthController(config).getRouter();
 1. User: User model or schema (required).
 2. routeNames: Custom names for authentication routes (optional).
 3. hashPassword: Custom password hashing function (optional).
-4. comparePassword: Custom password comparison function (optional).
-5. tokenOptions: Options for token generation (optional).
-6. emailOptions: Email configuration options (optional).
-7. enableLogs: Enable logging (optional).
+4. tokenOptions: Options for token generation (optional).
+5. emailOptions: Email configuration options (optional).
+6. enableLogs: Enable logging (optional).
 
 ## Email
 
-By default, auth-ez provides support for [Resend](https://resend.com/) email API (for forgot-password and verify-email). More support will be added soon. (nodemailer is under testing)
+By default, auth-ez provides support for [Resend](https://resend.com/) and [Nodemailer](https://nodemailer.com/) email API (for forgot-password and verify-email). You just have to initialize and pass one of these in `config > emailOptions`  as shown in the example below. More support will be added soon.
 
 ## Routes
 
@@ -60,22 +59,19 @@ auth-ez provides the following authentication routes which takes body in `applic
 - `POST /forgot-password`: Request a password reset email - Body: `email`.
 - `POST /reset-password`: Reset password with a valid token - Body: `newPassword`, have to pass token as query param: `/reset-password?token=your_generated_token`.
 - `POST /register`: User registration - Body: `username, email and password`.
-- `POST /logout`: Logout - Pass current **Bearer token** and it will expire the token.
+- `POST /logout`: Logout - Pass current **Bearer token** and it should expire the token.
  > You can rename the routes or use these.
 
 ## Methods
+If you want to create your own implementation instead of using default one you can import `AuthController` from the package and extend your class to it. By doing that you will be able to modify or write your own methods, which are:
 
 ```typescript
-// Hashes the provided password using the configured hashing function.
-hashPassword(password: string, options: object): string
 // Abstract method to be implemented by the user. Saves a new user to the data store.
 saveUser(params: SaveUser): Promise<IUser>
 // Abstract method to be implemented by the user. Retrieves a user from the data store.
 getUser(params: GetUser): Promise<IUser>
 // Abstract method to be implemented by the user. Updates user information in the data store.
 updateUser(params: UpdateUser): Promise<IUser>
-// Compares the provided plain password with the hashed password using the configured comparison function.
-comparePassword(plainPassword: string, hashedPassword: string): Promise<boolean>
 
 ```
 
@@ -102,10 +98,10 @@ const app = express();
 const config = {
   User, //required
   enableLogs: true, //optional
-  hashPassword: Function, //optional
+  hashPassword: Function, //optional - By default uses bcrypt and takes saltRounds = 16;
   //optional
   tokenOptions: {
-    expiresIn: '2h',
+    expiresIn: '2h', // defaults to 1 hr
   },
   //optional
   routeNames: {
@@ -124,14 +120,15 @@ const config = {
     emailSdk: resend || nodemailer,
     forgotPasswordSubject: '',
     forgotPasswordBody: '',
-    verificationMailSubject: 'Sending custom subject from config',
-    verificationMailBody: `here is the body bro`,
-    emailService: new EmailService(),
+    verificationMailSubject: 'Sending custom subject from config', // default: Verify your email
+    verificationMailBody: `here is the body bro`, // default: sends base_url?token=your_token in email;
   },
 };
 
 const authController = new AuthController(config).getRouter();
-app.use('/auth', authController);
+
+app.use('/auth', authController); // route name can be /anything does not necessarily have to be /auth
+
 app.get('/auth/profile', (req, res) => {
   res.send('Protected route!');
 });
@@ -144,6 +141,9 @@ Chai and Mocha has been used for testing purpose, here's how you can test this p
 1) Import express app context and User model from your local express app into the test files.
 2) Run `npm run test` to test.
 
+## Examples
+Here's an example repo that includes examples written in TS/JS for Mongoose and Sequelize:
+[auth-ez-examples](https://www.github.com/usaidpeerzada/auth-ez-examples) 
 
 ## Conclusion
 

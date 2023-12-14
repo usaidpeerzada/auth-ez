@@ -3,21 +3,21 @@ import bcrypt from 'bcrypt';
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 
-export function hashPassword(password: string, saltRounds = 16): string {
+export function hashPassword(
+  password: string,
+  saltRounds = 16,
+): Promise<string> {
   return bcrypt.hash(password, saltRounds);
 }
 
 export function comparePasswords(
   plainPassword: string,
   hashedPassword: string,
-): boolean {
+): Promise<boolean> {
   return bcrypt.compare(plainPassword, hashedPassword);
 }
 
-export function generateToken(
-  payload: object,
-  userOptions: object,
-): Promise<void> {
+export function generateToken(payload: object, userOptions: object): string {
   const secretKey = process.env.AUTH_EZ_JWT_SECRET_KEY;
   const options =
     userOptions && Object.keys(userOptions)?.length
@@ -56,34 +56,3 @@ export function createResponse(
 ): any {
   res.status(code).json({ ...message, code });
 }
-
-// export function authenticateToken(req: Request, res: Response, next: NextFunction) {
-//   const token = req.headers.authorization;
-//   if (!token) {
-//     return res.status(401).json({ error: 'Unauthorized' });
-//   }
-
-//   try {
-//     const payload = verifyToken(token);
-//     req.userId = payload.userId;
-//     next();
-//   } catch (error) {
-//     console.info(error);
-//     res.status(401).json({ error: 'Unauthorized' });
-//   }
-// }
-
-// export function authorize(role: string, User: User) {
-//   return async (req: Request, res: Response, next: NextFunction): Promise<Response> => {
-//     try {
-//       const user = await User.findById(req.userId);
-//       if (!user || user.role !== role) {
-//         return res.status(403).json({ error: 'Forbidden' });
-//       }
-//       next();
-//     } catch (error) {
-//       console.info(error);
-//       res.status(500).json({ error: 'Internal Server Error' });
-//     }
-//   };
-// }

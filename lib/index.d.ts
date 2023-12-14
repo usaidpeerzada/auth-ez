@@ -1,6 +1,6 @@
-import { AuthController } from './authController';
+import AuthController from './authController';
 import EmailService from './emails/emailService';
+import CreateMongoAuthController from './mongoAuthController';
+import CreateSqlAuthController from './sqlAuthController';
 import * as Types from './types';
-import { CreateMongoAuthController } from './mongoAuthController';
-import { CreateSqlAuthController } from './sqlAuthController';
-export { CreateMongoAuthController, EmailService, AuthController, Types, CreateSqlAuthController, };
+export { EmailService, AuthController, CreateMongoAuthController, CreateSqlAuthController, Types, };

@@ -7,7 +7,7 @@
     "declaration": true,
     "outDir": "lib",
     "allowSyntheticDefaultImports": true,
-    "importHelpers": true,
+    "importHelpers": false,
     "alwaysStrict": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,

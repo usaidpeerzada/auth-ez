@@ -21,7 +21,7 @@ import { emailTypes } from './constants';
 import NodemailerEmailService from './emails/nodemailerEmailService';
 import { protectedRoutes } from './utils';
 import ResponseController from './responseController';
-export abstract class AuthController implements IAuthEZDataStore {
+export default abstract class AuthController implements IAuthEZDataStore {
   private readonly config: Config;
   private readonly router: Router;
   private readonly emailOptions: EmailOptions;
@@ -73,12 +73,7 @@ export abstract class AuthController implements IAuthEZDataStore {
   abstract updateUser(params: UpdateUser): Promise<IUser>;
 
   private async sendEmail(params: object): Promise<void | boolean> {
-    if (
-      this.emailOptions &&
-      Object.keys(this.emailOptions).length &&
-      this.emailOptions.emailType !== '' &&
-      this.emailOptions.emailSdk
-    ) {
+    if (this.emailOptions && Object.keys(this.emailOptions).length) {
       let emailService: any;
       if (this.emailOptions?.emailType === emailTypes.NODEMAILER) {
         const nodemailerConfig = new NodemailerEmailService(
@@ -97,8 +92,8 @@ export abstract class AuthController implements IAuthEZDataStore {
     }
   }
 
-  hashPassword(password: string, options?: object): string {
-    let hashedPassword: string;
+  hashPassword(password: string, options?: object): Promise<string> {
+    let hashedPassword: Promise<string>;
     if (this.config.hashPassword) {
       hashedPassword = this.config.hashPassword(password, options);
     } else {
@@ -119,10 +114,6 @@ export abstract class AuthController implements IAuthEZDataStore {
     return Boolean(comparePassword);
   }
 
-  private generateToken(payload: object, userOptions: object): Promise<void> {
-    return generateToken(payload, userOptions);
-  }
-
   async loginWithEmail(req: Request, res: Response): Promise<Response> {
     try {
       const { email, password } = req.body;
@@ -140,7 +131,7 @@ export abstract class AuthController implements IAuthEZDataStore {
         user?.password,
       );
       if (user && comparePasswordWithHash) {
-        const token = this.generateToken(
+        const token = generateToken(
           { userId: user._id || user.id },
           this.config?.tokenOptions,
         );
@@ -178,7 +169,7 @@ export abstract class AuthController implements IAuthEZDataStore {
       );
       if (user && comparePasswordWithHash) {
         const token = generateToken(
-          { userId: user._id },
+          { userId: user._id || user.id },
           this.config.tokenOptions,
         );
         return this.response.success(res, {
@@ -201,7 +192,7 @@ export abstract class AuthController implements IAuthEZDataStore {
       const { email } = req.body;
       const user = await this.getUser({ email });
       if (user) {
-        const resetToken = this.generateToken(
+        const resetToken = generateToken(
           { userId: user._id || user.id },
           this.config?.tokenOptions,
         );
