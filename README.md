@@ -34,10 +34,11 @@ const authController = new CreateMongoAuthController(config).getRouter();
 ```
 
 > **config**: An object containing configuration options for the AuthController. Refer to the Config type for available options.
-> Configuration
 
-> <u>You can implement your own version controllers by importing AuthController from the package and extending it in your class.(Example will be added soon)</u>
-#### The AuthController requires a User model which can be added inside configuration object (Config) during instantiation. The configuration options include:
+<u>You can implement your own version of controllers by importing AuthController from the package and extending it in your class.(Example will be added soon)</u>
+#### The AuthController requires a User model which can be added inside configuration object (Config) during instantiation. 
+
+The configuration options include:
 
 1. User: User model or schema (required).
 2. routeNames: Custom names for authentication routes (optional).
@@ -140,10 +141,6 @@ app.listen(3000, () => {
 Chai and Mocha has been used for testing purpose, here's how you can test this package:
 1) Import express app context and User model from your local express app into the test files.
 2) Run `npm run test` to test.
-
-## Examples
-Here's an example repo that includes examples written in TS/JS for Mongoose and Sequelize:
-[auth-ez-examples](https://www.github.com/usaidpeerzada/auth-ez-examples) 
 
 ## Conclusion
 
