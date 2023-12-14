@@ -80,8 +80,6 @@ updateUser(params: UpdateUser): Promise<IUser>
 
 auth-ez handles various errors, including missing fields, user not found, invalid credentials, and internal server errors.
 
----
-
 ## Examples
 Examples can be found under [auth-ez-examples](https://www.github.com/usaidpeerzada/auth-ez-examples) repository, explained in Typescript and Javascript.
 
@@ -122,7 +120,7 @@ const config = {
     forgotPasswordSubject: '',
     forgotPasswordBody: '',
     verificationMailSubject: 'Sending custom subject from config', // default: Verify your email
-    verificationMailBody: `here is the body bro`, // default: sends base_url?token=your_token in email;
+    verificationMailBody: `here is the body`, // default: sends base_url?token=your_token in email;
   },
 };
 
