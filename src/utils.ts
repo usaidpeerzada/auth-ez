@@ -18,7 +18,7 @@ export function comparePasswords(
 }
 
 export function generateToken(payload: object, userOptions: object): string {
-  const secretKey = process.env.AUTH_EZ_JWT_SECRET_KEY;
+  const secretKey = process.env.JWT_SECRET_KEY;
   const options =
     userOptions && Object.keys(userOptions)?.length
       ? userOptions
@@ -28,7 +28,7 @@ export function generateToken(payload: object, userOptions: object): string {
 
 export function verifyToken(token: string): any {
   try {
-    const secretKey = process.env.AUTH_EZ_JWT_SECRET_KEY;
+    const secretKey = process.env.JWT_SECRET_KEY;
     return jwt.verify(token, secretKey);
   } catch (err) {
     return { message: err, status: 401 };

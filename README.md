@@ -1,8 +1,6 @@
 ## Overview
 
- auth-ez is a package designed to handle authentication-related functionality (token based) within a Node.js application using Express. It provides routes and methods for user authentication, registration, password reset, and email verification. This document outlines the structure, methods, and usage of the package.
-
-> This is the initial phase of auth-ez package, if you find any bugs or have any suggestions please feel free to contact me on my: [email](mailto:usaid@usaid.dev) or create an issue on GitHub repository [auth-ez](https://www.github.com/usaidpeerzada/auth-ez). Currently mongoose (MongoDB) and Sequelize (SQL) are supported. Prisma support will be added soon.
+auth-ez is a package designed to handle authentication-related functionality (token based) within a Node.js application using Express. It provides routes and methods for user authentication, registration, password reset, and email verification. This document outlines the structure, methods, and usage of the package.
 
 ## Prerequisites
 
@@ -21,7 +19,8 @@ Install the required packages:
 ```bash
 npm install auth-ez
 ```
-Inside your .env add ```AUTH_EZ_JWT_SECRET_KEY``` (required), ```BASE_URL```  and ```FROM_EMAIL``` for email (optional).
+
+Inside your .env add `JWT_SECRET_KEY` (required), `BASE_URL` and `FROM_EMAIL` for email (optional).
 
 Based on the project import CreateMongoAuthController or CreateSqlAuthController:
 
@@ -36,7 +35,8 @@ const authController = new CreateMongoAuthController(config).getRouter();
 > **config**: An object containing configuration options for the AuthController. Refer to the Config type for available options.
 
 <u>You can implement your own version of controllers by importing AuthController from the package and extending it in your class.(Example will be added soon)</u>
-#### The AuthController requires a User model which can be added inside configuration object (Config) during instantiation. 
+
+#### The AuthController requires a User model which can be added inside configuration object (Config) during instantiation.
 
 The configuration options include:
 
@@ -49,7 +49,7 @@ The configuration options include:
 
 ## Email
 
-By default, auth-ez provides support for [Resend](https://resend.com/) and [Nodemailer](https://nodemailer.com/) email API (for forgot-password and verify-email). You just have to initialize and pass one of these in `config > emailOptions`  as shown in the example below. More support will be added soon.
+By default, auth-ez provides support for [Resend](https://resend.com/) and [Nodemailer](https://nodemailer.com/) email API (for forgot-password and verify-email). You just have to initialize and pass one of these in `config > emailOptions` as shown in the example below. More support will be added soon.
 
 ## Routes
 
@@ -64,6 +64,7 @@ auth-ez provides the following authentication routes which takes body in `applic
  > You can rename the routes or use these.
 
 ## Methods
+
 If you want to create your own implementation instead of using default one you can import `AuthController` from the package and extend your class to it. By doing that you will be able to modify or write your own methods, which are:
 
 ```typescript
@@ -81,6 +82,7 @@ updateUser(params: UpdateUser): Promise<IUser>
 auth-ez handles various errors, including missing fields, user not found, invalid credentials, and internal server errors.
 
 ## Examples
+
 Examples can be found under [auth-ez-examples](https://www.github.com/usaidpeerzada/auth-ez-examples) repository, explained in Typescript and Javascript.
 
 This example sets up an Express server and mounts the AuthController routes under the '/auth' path.
@@ -135,10 +137,13 @@ app.listen(3000, () => {
   console.log('Server is running on port 3000');
 });
 ```
+
 ## Tests
+
 Chai and Mocha has been used for testing purpose, here's how you can test this package:
-1) Import express app context and User model from your local express app into the test files.
-2) Run `npm run test` to test.
+
+1. Import express app context and User model from your local express app into the test files.
+2. Run `npm run test` to test.
 
 ## Conclusion
 
