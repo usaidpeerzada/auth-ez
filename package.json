@@ -20,7 +20,7 @@
     "typescript": "^5.3.2"
   },
   "name": "auth-ez",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Simple and easy user authentication.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
