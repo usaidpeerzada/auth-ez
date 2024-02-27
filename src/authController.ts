@@ -17,30 +17,49 @@ import {
 } from './types';
 import EmailService from './emails/emailService';
 import ResendEmailService from './emails/resendEmailService';
-import { emailTypes } from './constants';
+import {
+  LOGIN_WITH_EMAIL,
+  LOGIN_WITH_USERNAME,
+  FORGOT_PASSWORD,
+  RESET_PASSWORD,
+  REGISTER,
+  LOGOUT,
+  emailTypes,
+  REQUIRED_FIELDS,
+  USER_NOT_FOUND,
+  LOGIN_SUCCESSFUL,
+  INVALID_CREDENTIALS,
+  INTERNAL_SERVER_ERROR,
+  LOGOUT_SUCCESSFUL,
+  UNAUTHORIZED,
+  USER_REGISTERED_SUCCESSFULLY,
+  USERNAME_ALREADY_EXISTS,
+  PASSWORD_RESET_SUCCESSFUL,
+} from './constants';
 import NodemailerEmailService from './emails/nodemailerEmailService';
 import { protectedRoutes } from './utils';
 import ResponseController from './responseController';
+
 export default abstract class AuthController implements IAuthEZDataStore {
   private readonly config: Config;
   private readonly router: Router;
   private readonly emailOptions: EmailOptions;
   private readonly response: ResponseController;
-  readonly User;
+  readonly User: any;
 
   constructor(config: Config) {
     this.config = config;
     const routes = {
       emailLoginRoute:
-        config.routeNames?.loginWithEmailRoute || '/login-with-email',
+        config.routeNames?.loginWithEmailRoute || LOGIN_WITH_EMAIL,
       usernameLoginRoute:
-        config.routeNames?.loginWithUsernameRoute || '/login-with-username',
+        config.routeNames?.loginWithUsernameRoute || LOGIN_WITH_USERNAME,
       forgotPasswordRoute:
-        config.routeNames?.forgotPasswordRoute || '/forgot-password',
+        config.routeNames?.forgotPasswordRoute || FORGOT_PASSWORD,
       resetPasswordRoute:
-        config.routeNames?.resetPasswordRoute || '/reset-password',
-      signupRoute: config.routeNames?.signupRoute || '/register',
-      logoutRoute: config.routeNames?.logoutRoute || '/logout',
+        config.routeNames?.resetPasswordRoute || RESET_PASSWORD,
+      signupRoute: config.routeNames?.signupRoute || REGISTER,
+      logoutRoute: config.routeNames?.logoutRoute || LOGOUT,
     };
     this.router = express.Router();
     this.router.use(express.json());
@@ -119,12 +138,12 @@ export default abstract class AuthController implements IAuthEZDataStore {
       const { email, password } = req.body;
       if (!email || !password) {
         return this.response.clientError(res, {
-          error: 'All fields are required!',
+          error: REQUIRED_FIELDS,
         });
       }
       const user = await this.getUser({ email });
       if (!user) {
-        return this.response.notFound(res, { error: 'User not found!' });
+        return this.response.notFound(res, { error: USER_NOT_FOUND });
       }
       const comparePasswordWithHash = await this.comparePassword(
         password,
@@ -136,18 +155,18 @@ export default abstract class AuthController implements IAuthEZDataStore {
           this.config?.tokenOptions,
         );
         return this.response.success(res, {
-          message: 'Login successful',
+          message: LOGIN_SUCCESSFUL,
           token,
         });
       } else {
         return this.response.unauthorized(res, {
-          error: 'Invalid credentials',
+          error: INVALID_CREDENTIALS,
         });
       }
     } catch (err) {
       this.config.enableLogs &&
         console.info(`Error in route: ${req.path}: `, err);
-      return this.response.error(res, { error: 'Internal Server Error' });
+      return this.response.error(res, { error: INTERNAL_SERVER_ERROR });
     }
   }
 
@@ -156,12 +175,12 @@ export default abstract class AuthController implements IAuthEZDataStore {
       const { username, password } = req.body;
       if (!username || !password) {
         return this.response.clientError(res, {
-          error: 'All fields are required!',
+          error: REQUIRED_FIELDS,
         });
       }
       const user = await this.getUser({ username });
       if (!user) {
-        return this.response.notFound(res, { error: 'User not found!' });
+        return this.response.notFound(res, { error: USER_NOT_FOUND });
       }
       const comparePasswordWithHash = await this.comparePassword(
         password,
@@ -173,17 +192,17 @@ export default abstract class AuthController implements IAuthEZDataStore {
           this.config.tokenOptions,
         );
         return this.response.success(res, {
-          message: 'Login successful',
+          message: LOGIN_SUCCESSFUL,
           token,
         });
       } else {
         return this.response.unauthorized(res, {
-          error: 'Invalid credentials',
+          error: INVALID_CREDENTIALS,
         });
       }
     } catch (error) {
       this.config.enableLogs && console.info(`Error in ${req.path}: `, error);
-      return this.response.error(res, { error: 'Internal Server Error' });
+      return this.response.error(res, { error: INTERNAL_SERVER_ERROR });
     }
   }
 
@@ -217,11 +236,11 @@ export default abstract class AuthController implements IAuthEZDataStore {
           message: 'Password reset email sent',
         });
       } else {
-        return this.response.notFound(res, { error: 'User not found' });
+        return this.response.notFound(res, { error: USER_NOT_FOUND });
       }
     } catch (error) {
       this.config.enableLogs && console.info(`Error in ${req.path}: `, error);
-      return this.response.error(res, { error: 'Internal Server Error' });
+      return this.response.error(res, { error: INTERNAL_SERVER_ERROR });
     }
   }
 
@@ -237,13 +256,13 @@ export default abstract class AuthController implements IAuthEZDataStore {
           id: user?.id || user?._id,
           password: hashedPassword,
         });
-        this.response.success(res, { message: 'Password reset successful' });
+        this.response.success(res, { message: PASSWORD_RESET_SUCCESSFUL });
       } else {
-        this.response.notFound(res, { error: 'User not found' });
+        this.response.notFound(res, { error: USER_NOT_FOUND });
       }
     } catch (error) {
       this.config.enableLogs && console.info(`Error in ${req.path}: `, error);
-      this.response.error(res, { error: 'Internal Server Error' });
+      this.response.error(res, { error: INTERNAL_SERVER_ERROR });
     }
   }
 
@@ -251,7 +270,7 @@ export default abstract class AuthController implements IAuthEZDataStore {
     try {
       const { username, email, password } = req.body;
       if (!email || !username || !password) {
-        this.response.clientError(res, { error: 'All fields are required!' });
+        this.response.clientError(res, { error: REQUIRED_FIELDS });
         return;
       }
       const existingUser = await this.getUser({
@@ -260,7 +279,7 @@ export default abstract class AuthController implements IAuthEZDataStore {
       });
       if (existingUser) {
         this.response.clientError(res, {
-          error: 'Username or email already exists',
+          error: USERNAME_ALREADY_EXISTS,
         });
         return;
       }
@@ -294,11 +313,11 @@ export default abstract class AuthController implements IAuthEZDataStore {
         this.sendEmail(mailParams);
       }
       this.response.created(res, {
-        message: 'User registered successfully',
+        message: USER_REGISTERED_SUCCESSFULLY,
       });
     } catch (error) {
       this.config.enableLogs && console.info(`Error in ${req.path}: `, error);
-      this.response.error(res, { error: 'Internal Server Error' });
+      this.response.error(res, { error: INTERNAL_SERVER_ERROR });
     }
   }
 
@@ -306,17 +325,17 @@ export default abstract class AuthController implements IAuthEZDataStore {
     try {
       const token = req.header('Authorization')?.replace('Bearer ', '');
       if (!token) {
-        this.response.unauthorized(res, { error: 'Unauthorized' });
+        this.response.unauthorized(res, { error: UNAUTHORIZED });
       }
       res.cookie('token', '', { expires: new Date(0) });
-      this.response.success(res, { message: 'Logout successful' });
+      this.response.success(res, { message: LOGOUT_SUCCESSFUL });
     } catch (error) {
       this.config.enableLogs && console.info(`Error in ${req.path}: `, error);
-      this.response.error(res, { error: 'Internal Server Error' });
+      this.response.error(res, { error: INTERNAL_SERVER_ERROR });
     }
   }
 
-  getRouter(): express.Router {
+  getRouter(): Router {
     return this.router;
   }
 }

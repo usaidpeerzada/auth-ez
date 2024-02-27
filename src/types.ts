@@ -56,7 +56,7 @@ export type SaveUser = {
 export type GetUser = {
   email?: string;
   username?: string;
-  id?: string;
+  id?: string | number;
 };
 
 export type SuccessResponse = {

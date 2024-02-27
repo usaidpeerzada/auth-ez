@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import { Request, Response, Router } from 'express';
 import IAuthEZDataStore from './authEZDataStore';
 import { Config, GetUser, SaveUser, UpdateUser, IUser } from './types';
 export default abstract class AuthController implements IAuthEZDataStore {
@@ -20,5 +20,5 @@ export default abstract class AuthController implements IAuthEZDataStore {
     resetPasswordRoute(req: Request, res: Response): Promise<void>;
     signUpRoute(req: Request, res: Response): Promise<void>;
     logoutRoute(req: Request, res: Response): void;
-    getRouter(): express.Router;
+    getRouter(): Router;
 }
