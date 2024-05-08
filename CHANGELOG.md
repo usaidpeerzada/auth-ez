@@ -14,3 +14,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Updated
 
 - Updated `utils.ts` by changing the `process.env.AUTH_EZ_JWT_SECRET_KEY` to `process.env.JWT_SECRET_KEY`.
+
+## [1.0.7] - 2024-02-27
+
+### Updated
+
+- Constants and code clean up.
+  
+## [1.0.8] - 2024-05-09
+
+### Added
+
+- Authorized user id to `login-with-email` and 'login-with-username'.

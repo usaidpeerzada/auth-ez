@@ -157,6 +157,7 @@ export default abstract class AuthController implements IAuthEZDataStore {
         return this.response.success(res, {
           message: LOGIN_SUCCESSFUL,
           token,
+          userId: user._id || user.id,
         });
       } else {
         return this.response.unauthorized(res, {
@@ -194,6 +195,7 @@ export default abstract class AuthController implements IAuthEZDataStore {
         return this.response.success(res, {
           message: LOGIN_SUCCESSFUL,
           token,
+          userId: user._id || user.id,
         });
       } else {
         return this.response.unauthorized(res, {
