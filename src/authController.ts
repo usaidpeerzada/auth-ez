@@ -91,7 +91,7 @@ export default abstract class AuthController implements IAuthEZDataStore {
     );
     this.router.post(`${routes.signupRoute}`, this.signUpRoute.bind(this));
     this.router.post(`${routes.logoutRoute}`, this.logoutRoute.bind(this));
-    this.router.post(`${routes.verifyEmail}`, this.verifyEmail.bind(this));
+    this.router.get(`${routes.verifyEmail}`, this.verifyEmail.bind(this));
     this.router.post(
       `${resendVerificationRoute}`,
       this.resendVerificationEmail.bind(this),
@@ -357,7 +357,10 @@ export default abstract class AuthController implements IAuthEZDataStore {
       const decodedToken = verifyToken(token);
       const userId = decodedToken.userId;
       await markEmailAsVerified(userId, this.User);
-      this.response.success(res, { message: 'Email verified successfully' });
+      this.response.success(res, {
+        message: 'Email verified successfully',
+        verified: true,
+      });
     } catch (error) {
       console.error('Error verifying email:', error.message);
       this.response.clientError(res, { error: 'Invalid or expired token' });
