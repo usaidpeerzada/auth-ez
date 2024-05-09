@@ -4,6 +4,7 @@ import {
   comparePasswords,
   generateToken,
   hashPassword,
+  markEmailAsVerified,
   verifyToken,
 } from './utils';
 import {
@@ -35,6 +36,8 @@ import {
   USER_REGISTERED_SUCCESSFULLY,
   USERNAME_ALREADY_EXISTS,
   PASSWORD_RESET_SUCCESSFUL,
+  VERIFY_EMAIL,
+  RESEND_VERIFICATION_EMAIL,
 } from './constants';
 import NodemailerEmailService from './emails/nodemailerEmailService';
 import { protectedRoutes } from './utils';
@@ -60,10 +63,13 @@ export default abstract class AuthController implements IAuthEZDataStore {
         config.routeNames?.resetPasswordRoute || RESET_PASSWORD,
       signupRoute: config.routeNames?.signupRoute || REGISTER,
       logoutRoute: config.routeNames?.logoutRoute || LOGOUT,
+      verifyEmail: config.routeNames?.verifyEmail || VERIFY_EMAIL,
     };
+    const resendVerificationRoute =
+      config.routeNames?.resendVerificationEmail || RESEND_VERIFICATION_EMAIL;
     this.router = express.Router();
     this.router.use(express.json());
-    this.router.use(protectedRoutes(routes));
+    this.router.use(protectedRoutes(routes, config.User));
     this.User = config.User;
     this.emailOptions = this.config.emailOptions;
     this.response = new ResponseController();
@@ -85,6 +91,11 @@ export default abstract class AuthController implements IAuthEZDataStore {
     );
     this.router.post(`${routes.signupRoute}`, this.signUpRoute.bind(this));
     this.router.post(`${routes.logoutRoute}`, this.logoutRoute.bind(this));
+    this.router.post(`${routes.verifyEmail}`, this.verifyEmail.bind(this));
+    this.router.post(
+      `${resendVerificationRoute}`,
+      this.resendVerificationEmail.bind(this),
+    );
   }
 
   abstract saveUser(params: SaveUser): Promise<IUser>;
@@ -296,7 +307,7 @@ export default abstract class AuthController implements IAuthEZDataStore {
           { userId: user._id || user.id },
           this.config?.tokenOptions,
         );
-        const url = `${process.env.BASE_URL}/auth/verify-email?token=${verificationToken}`;
+        const url = `${process.env.BASE_URL}/verify-email?token=${verificationToken}`;
         let mailParams: EmailParams = {
           toMail: user?.email,
           mailType: 'verification',
@@ -334,6 +345,54 @@ export default abstract class AuthController implements IAuthEZDataStore {
     } catch (error) {
       this.config.enableLogs && console.info(`Error in ${req.path}: `, error);
       this.response.error(res, { error: INTERNAL_SERVER_ERROR });
+    }
+  }
+
+  async verifyEmail(req: Request, res: Response): Promise<void> {
+    const token = req.query.token as string;
+    if (!token) {
+      this.response.unauthorized(res, { error: UNAUTHORIZED });
+    }
+    try {
+      const decodedToken = verifyToken(token);
+      const userId = decodedToken.userId;
+      await markEmailAsVerified(userId, this.User);
+      this.response.success(res, { message: 'Email verified successfully' });
+    } catch (error) {
+      console.error('Error verifying email:', error.message);
+      this.response.clientError(res, { error: 'Invalid or expired token' });
+    }
+  }
+
+  async resendVerificationEmail(req, res: Response): Promise<void> {
+    try {
+      const userId = req.body.id;
+      const user = await this.getUser({ id: userId });
+      const token = generateToken(
+        { userId: userId, email: user.email },
+        this.config?.tokenOptions,
+      );
+      const url = `${process.env.BASE_URL}/verify-email?token=${token}`;
+      let mailParams: EmailParams = {
+        toMail: user.email,
+        mailType: 'verification',
+        url,
+      };
+      if (
+        this.emailOptions?.verificationMailSubject ||
+        this.emailOptions?.verificationMailBody
+      ) {
+        mailParams = {
+          ...mailParams,
+          mailSubject: this.emailOptions?.verificationMailSubject,
+          mailBody: this.emailOptions?.verificationMailBody,
+        };
+      }
+      this.sendEmail(mailParams);
+      res.status(200).send('Verification email resent successfully');
+    } catch (error) {
+      console.error('Error resending verification email:', error.message);
+      res.status(500).send('Internal server error');
     }
   }
 

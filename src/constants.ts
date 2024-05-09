@@ -9,6 +9,8 @@ export const FORGOT_PASSWORD = '/forgot-password';
 export const RESET_PASSWORD = '/reset-password';
 export const REGISTER = '/register';
 export const LOGOUT = '/logout';
+export const VERIFY_EMAIL = '/verify-email';
+export const RESEND_VERIFICATION_EMAIL = '/resend-verification-email';
 
 export const REQUIRED_FIELDS = 'All fields are required!';
 export const USER_NOT_FOUND = 'User not found!';

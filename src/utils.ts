@@ -2,6 +2,9 @@
 import bcrypt from 'bcrypt';
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+export interface IUserInfoRequest extends Request {
+  user: string;
+}
 
 export function hashPassword(
   password: string,
@@ -35,16 +38,29 @@ export function verifyToken(token: string): any {
   }
 }
 
-export function protectedRoutes(routes: object) {
-  return (req: Request, res: Response, next: NextFunction): void | Response => {
+export function protectedRoutes(routes: object, User) {
+  return async (
+    req: IUserInfoRequest,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void | Response<any, Record<string, any>>> => {
     const token = req.header('Authorization')?.replace('Bearer ', '');
     const unprotectedRoutes = routes && Object.values(routes);
     if (unprotectedRoutes.includes(req.path)) {
       return next();
     }
+    const payload = verifyToken(token);
     if (!token || !verifyToken(token) || verifyToken(token)?.status === 401) {
       return res.status(401).json({ error: 'Unauthorized', code: 401 });
     }
+    const user = await User.findById(payload.userId)
+      .select('-password')
+      .lean()
+      .exec();
+    if (!user) {
+      return res.status(401).end();
+    }
+    req.user = user;
     next();
   };
 }
@@ -55,4 +71,13 @@ export function createResponse(
   message: object,
 ): any {
   res.status(code).json({ ...message, code });
+}
+
+export async function markEmailAsVerified(userId: string, User): Promise<void> {
+  try {
+    await User.updateOne({ _id: userId }, { emailVerified: true });
+  } catch (error) {
+    console.error('Error marking email as verified:', error);
+    throw new Error('Failed to mark email as verified');
+  }
 }

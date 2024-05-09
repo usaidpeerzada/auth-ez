@@ -21,6 +21,8 @@ export type Config = {
         forgotPasswordRoute?: string;
         resetPasswordRoute?: string;
         logoutRoute?: string;
+        verifyEmail?: string;
+        resendVerificationEmail?: string;
     };
     emailOptions?: {
         enableEmail: boolean;

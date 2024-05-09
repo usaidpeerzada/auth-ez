@@ -20,5 +20,7 @@ export default abstract class AuthController implements IAuthEZDataStore {
     resetPasswordRoute(req: Request, res: Response): Promise<void>;
     signUpRoute(req: Request, res: Response): Promise<void>;
     logoutRoute(req: Request, res: Response): void;
+    verifyEmail(req: Request, res: Response): Promise<void>;
+    resendVerificationEmail(req: any, res: Response): Promise<void>;
     getRouter(): Router;
 }
