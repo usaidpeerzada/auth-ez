@@ -61,6 +61,8 @@ auth-ez provides the following authentication routes which takes body in `applic
 - `POST /reset-password`: Reset password with a valid token - Body: `newPassword`, have to pass token as query param: `/reset-password?token=your_generated_token`.
 - `POST /register`: User registration - Body: `username, email and password`.
 - `POST /logout`: Logout - Pass current **Bearer token** and it should expire the token.
+- `POST /verify-email`: Email verification.
+- `POST /resend-verification-email`: Resend verification email - You can resend a verification email using this route, have to pass user id in req.body.
  > You can rename the routes or use these.
 
 ## Methods
