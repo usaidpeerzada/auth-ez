@@ -26,3 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Authorized user id to `login-with-email` and 'login-with-username'.
+
+## [1.0.9] - 2024-05-10
+
+### Added
+
+- verification email and resend verification email route.
+- authenticated user to the protected route request.
