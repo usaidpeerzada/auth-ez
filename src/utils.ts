@@ -81,3 +81,38 @@ export async function markEmailAsVerified(userId: string, User): Promise<void> {
     throw new Error('Failed to mark email as verified');
   }
 }
+
+export function generateRefreshToken(userId: string): string {
+  return jwt.sign({ userId }, process.env.REFRESH_TOKEN_SECRET, {
+    expiresIn: '7d',
+  });
+}
+
+export function verifyRefreshToken(token: string): any {
+  try {
+    return jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+  } catch (error) {
+    return null;
+  }
+}
+
+export function isNullOrEmpty(value: any): boolean {
+  if (value === null || value === undefined) {
+    return true;
+  }
+  if (typeof value === 'string' && value.trim() === '') {
+    return true;
+  }
+  if (Array.isArray(value) && value.length === 0) {
+    return true;
+  }
+  if (typeof value === 'object' && !Array.isArray(value)) {
+    if (Object.keys(value).length === 0) {
+      return true;
+    }
+  }
+  if (value instanceof Map || value instanceof Set) {
+    return value.size === 0;
+  }
+  return false;
+}

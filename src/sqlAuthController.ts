@@ -19,7 +19,7 @@ export default class CreateSqlAuthController extends AuthController {
   }
   async updateUser(params: UpdateUser): Promise<IUser> {
     const updateUser = await this.User.update(
-      { password: params?.password },
+      { password: params?.password, refreshToken: params.refreshToken },
       { where: { id: params.id } },
     );
     return updateUser;

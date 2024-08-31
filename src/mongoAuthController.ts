@@ -18,15 +18,18 @@ export default class CreateMongoAuthController extends AuthController {
   }
 
   async saveUser(params: SaveUser): Promise<IUser> {
-    const { username, email, password } = params;
-    const user = new this.User({ username, email, password });
+    const { username, email, password, ...rest } = params;
+    const user = new this.User({ username, email, password, ...rest });
     await user.save();
     return user;
   }
 
   async updateUser(params: UpdateUser): Promise<IUser> {
-    const { id, password } = params;
-    const updateUser = await this.User.findByIdAndUpdate(id, { password });
+    const { id, password, ...rest } = params;
+    const updateUser = await this.User.findByIdAndUpdate(id, {
+      password,
+      ...rest,
+    });
     return updateUser;
   }
 }

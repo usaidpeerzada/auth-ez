@@ -1,6 +1,15 @@
 ## Overview
 
-auth-ez is a package designed to handle authentication-related functionality (token based) within a Node.js application using Express. It provides routes and methods for user authentication, registration, password reset, and email verification. This document outlines the structure, methods, and usage of the package.
+auth-ez is a package designed to handle authentication-related functionality (token based) within a Node.js application using Express. It provides routes and methods for user authentication, registration, password reset, refresh tokens and email verification. This document outlines the structure, methods, and usage of the package.
+
+## Refresh Token Functionality
+auth-ez supports refresh token-based authentication to maintain user sessions securely. A refresh token is issued alongside the access token during login, allowing users to obtain a new access token without re-authenticating. This is particularly useful for maintaining sessions in applications where the access token has a short expiration time.
+
+Key features:
+
+- **Automatic Refresh Token Generation**: Refresh tokens are issued when a user logs in.
+- **Token Refresh Endpoint**: The package provides a route to refresh access tokens using a valid refresh token.
+- **Optional Cookie Storage**: You can choose to store refresh tokens in cookies for added security, or handle them manually in the request body.
 
 ## Prerequisites
 
@@ -20,7 +29,7 @@ Install the required packages:
 npm install auth-ez
 ```
 
-Inside your .env add `JWT_SECRET_KEY` (required), `BASE_URL` and `FROM_EMAIL` for email (optional).
+Inside your .env add `JWT_SECRET_KEY` (required), `REFRESH_TOKEN_SECRET` for refresh token, `BASE_URL` and `FROM_EMAIL` for email (optional).
 
 Based on the project import CreateMongoAuthController or CreateSqlAuthController:
 
@@ -34,7 +43,7 @@ const authController = new CreateMongoAuthController(config).getRouter();
 
 > **config**: An object containing configuration options for the AuthController. Refer to the Config type for available options.
 
-<u>You can implement your own version of controllers by importing AuthController from the package and extending it in your class.(Example will be added soon)</u>
+<u>You can implement your own version of controllers by importing AuthController from the package and extending it in your class. [Examples](#examples) ⬇︎</u>
 
 #### The AuthController requires a User model which can be added inside configuration object (Config) during instantiation.
 
@@ -46,6 +55,8 @@ The configuration options include:
 4. tokenOptions: Options for token generation (optional).
 5. emailOptions: Email configuration options (optional).
 6. enableLogs: Enable logging (optional).
+7. enableRefreshToken: To enable refresh token functionality.
+8. refreshTokenOptions: Options for refresh token (check example below).
 
 ## Email
 
@@ -63,6 +74,8 @@ auth-ez provides the following authentication routes which takes body in `applic
 - `POST /logout`: Logout - Pass current **Bearer token** and it should expire the token.
 - `POST /verify-email`: Email verification.
 - `POST /resend-verification-email`: Resend verification email - You can resend a verification email using this route, have to pass user id in req.body.
+- `POST /refresh-token`: Refresh the access token using a valid refresh token - Body: { refreshToken: "your_refresh_token" }.
+
  > You can rename the routes or use these.
 
 ## Methods
@@ -126,6 +139,11 @@ const config = {
     verificationMailSubject: 'Sending custom subject from config', // default: Verify your email
     verificationMailBody: `here is the body`, // default: sends base_url?token=your_token in email;
   },
+  enableRefreshToken: false, // to enable use of refresh token functionality
+  refreshTokenOptions: {
+    useCookie: true, // Store refresh token in cookies (optional)
+    cookieOptions: { httpOnly: true, secure: true, sameSite: 'strict' }, // Customize cookie settings (optional)
+  },
 };
 
 const authController = new AuthController(config).getRouter();
@@ -135,6 +153,7 @@ app.use('/auth', authController); // route name can be /anything does not necess
 app.get('/auth/profile', (req, res) => {
   res.send('Protected route!');
 });
+
 app.listen(3000, () => {
   console.log('Server is running on port 3000');
 });

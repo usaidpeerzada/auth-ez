@@ -20,7 +20,7 @@
     "typescript": "^5.3.2"
   },
   "name": "auth-ez",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "description": "Simple and easy user authentication.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -41,7 +41,6 @@
     "start": "node lib/index.js",
     "prettier": "prettier --config .prettierrc --write .",
     "build": "tsc -p tsconfig.json",
-    "build:release": "npm run clean && tsc -p tsconfig.release.json",
     "build:watch": "tsc -w -p tsconfig.json",
     "prebuild": "npm run lint",
     "lint": "eslint . --ext .ts --ext .mts",

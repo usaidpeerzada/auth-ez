@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Authorized user id to `login-with-email` and 'login-with-username'.
+- Authorized user id to `login-with-email` and `login-with-username`.
 
 ## [1.0.9] - 2024-05-10
 
@@ -33,3 +33,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - verification email and resend verification email route.
 - authenticated user to the protected route request.
+
+## [1.1.0] - 2024-09-01
+
+### Added
+
+- Major Update!. Refresh token functionality.

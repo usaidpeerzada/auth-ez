@@ -9,3 +9,6 @@ export declare function verifyToken(token: string): any;
 export declare function protectedRoutes(routes: object, User: any): (req: IUserInfoRequest, res: Response, next: NextFunction) => Promise<void | Response<any, Record<string, any>>>;
 export declare function createResponse(res: Response, code: number, message: object): any;
 export declare function markEmailAsVerified(userId: string, User: any): Promise<void>;
+export declare function generateRefreshToken(userId: string): string;
+export declare function verifyRefreshToken(token: string): any;
+export declare function isNullOrEmpty(value: any): boolean;

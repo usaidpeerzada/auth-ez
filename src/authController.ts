@@ -2,9 +2,12 @@ import express, { Request, Response, Router } from 'express';
 import IAuthEZDataStore from './authEZDataStore';
 import {
   comparePasswords,
+  generateRefreshToken,
   generateToken,
   hashPassword,
+  isNullOrEmpty,
   markEmailAsVerified,
+  verifyRefreshToken,
   verifyToken,
 } from './utils';
 import {
@@ -15,6 +18,7 @@ import {
   SaveUser,
   UpdateUser,
   IUser,
+  SuccessResponse,
 } from './types';
 import EmailService from './emails/emailService';
 import ResendEmailService from './emails/resendEmailService';
@@ -38,6 +42,7 @@ import {
   PASSWORD_RESET_SUCCESSFUL,
   VERIFY_EMAIL,
   RESEND_VERIFICATION_EMAIL,
+  REFRESH_TOKEN_ROUTE,
 } from './constants';
 import NodemailerEmailService from './emails/nodemailerEmailService';
 import { protectedRoutes } from './utils';
@@ -64,6 +69,7 @@ export default abstract class AuthController implements IAuthEZDataStore {
       signupRoute: config.routeNames?.signupRoute || REGISTER,
       logoutRoute: config.routeNames?.logoutRoute || LOGOUT,
       verifyEmail: config.routeNames?.verifyEmail || VERIFY_EMAIL,
+      refreshToken: config.routeNames?.refreshToken || REFRESH_TOKEN_ROUTE,
     };
     const resendVerificationRoute =
       config.routeNames?.resendVerificationEmail || RESEND_VERIFICATION_EMAIL;
@@ -96,6 +102,7 @@ export default abstract class AuthController implements IAuthEZDataStore {
       `${resendVerificationRoute}`,
       this.resendVerificationEmail.bind(this),
     );
+    this.router.post('/refresh-token', this.refreshToken.bind(this));
   }
 
   abstract saveUser(params: SaveUser): Promise<IUser>;
@@ -165,11 +172,36 @@ export default abstract class AuthController implements IAuthEZDataStore {
           { userId: user._id || user.id },
           this.config?.tokenOptions,
         );
-        return this.response.success(res, {
+        const payload: SuccessResponse = {
           message: LOGIN_SUCCESSFUL,
           token,
           userId: user._id || user.id,
-        });
+        };
+        if (this.config.enableRefreshToken) {
+          const refreshToken = generateRefreshToken(user._id || user.id);
+          await this.updateUser({
+            id: user._id || user.id,
+            refreshToken,
+          });
+          if (
+            !isNullOrEmpty(this.config.refreshTokenOptions) &&
+            this.config.refreshTokenOptions.useCookie
+          ) {
+            const cookieOptions = !isNullOrEmpty(
+              this.config.refreshTokenOptions.cookieOptions,
+            )
+              ? this.config.refreshTokenOptions.cookieOptions
+              : {
+                  httpOnly: true,
+                  secure: process.env.NODE_ENV === 'production',
+                  sameSite: 'strict',
+                };
+            res.cookie('refreshToken', refreshToken, cookieOptions);
+          } else {
+            payload.refreshToken = refreshToken;
+          }
+        }
+        return this.response.success(res, payload);
       } else {
         return this.response.unauthorized(res, {
           error: INVALID_CREDENTIALS,
@@ -203,11 +235,36 @@ export default abstract class AuthController implements IAuthEZDataStore {
           { userId: user._id || user.id },
           this.config.tokenOptions,
         );
-        return this.response.success(res, {
+        const payload: SuccessResponse = {
           message: LOGIN_SUCCESSFUL,
           token,
           userId: user._id || user.id,
-        });
+        };
+        if (this.config.enableRefreshToken) {
+          const refreshToken = generateRefreshToken(user._id || user.id);
+          await this.updateUser({
+            id: user._id || user.id,
+            refreshToken,
+          });
+          if (
+            !isNullOrEmpty(this.config.refreshTokenOptions) &&
+            this.config.refreshTokenOptions.useCookie
+          ) {
+            const cookieOptions = !isNullOrEmpty(
+              this.config.refreshTokenOptions.cookieOptions,
+            )
+              ? this.config.refreshTokenOptions.cookieOptions
+              : {
+                  httpOnly: true,
+                  secure: process.env.NODE_ENV === 'production',
+                  sameSite: 'strict',
+                };
+            res.cookie('refreshToken', refreshToken, cookieOptions);
+          } else {
+            payload.refreshToken = refreshToken;
+          }
+        }
+        return this.response.success(res, payload);
       } else {
         return this.response.unauthorized(res, {
           error: INVALID_CREDENTIALS,
@@ -396,6 +453,57 @@ export default abstract class AuthController implements IAuthEZDataStore {
     } catch (error) {
       console.error('Error resending verification email:', error.message);
       res.status(500).send('Internal server error');
+    }
+  }
+
+  async refreshToken(req: Request, res: Response): Promise<Response> {
+    try {
+      const token = req.body.refreshToken;
+      if (!token) {
+        return this.response.unauthorized(res, { error: UNAUTHORIZED });
+      }
+      const decoded = verifyRefreshToken(token);
+      if (!decoded) {
+        return this.response.unauthorized(res, { error: 'Invalid token' });
+      }
+      const user = await this.getUser({ id: decoded.userId });
+      if (!user || user.refreshToken !== token) {
+        return this.response.unauthorized(res, { error: UNAUTHORIZED });
+      }
+      const accessToken = generateToken(
+        { userId: user._id || user.id },
+        this.config?.tokenOptions,
+      );
+      const newRefreshToken = generateRefreshToken(user._id || user.id);
+      await this.updateUser({
+        id: user._id || user.id,
+        refreshToken: newRefreshToken,
+      });
+      const payload: SuccessResponse = {
+        token: accessToken,
+        userId: user._id || user.id,
+      };
+      if (
+        !isNullOrEmpty(this.config.refreshTokenOptions) &&
+        this.config.refreshTokenOptions.useCookie
+      ) {
+        const cookieOptions = !isNullOrEmpty(
+          this.config.refreshTokenOptions.cookieOptions,
+        )
+          ? this.config.refreshTokenOptions.cookieOptions
+          : {
+              httpOnly: true,
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: 'strict',
+            };
+        res.cookie('refreshToken', newRefreshToken, cookieOptions);
+      } else {
+        payload.refreshToken = newRefreshToken;
+      }
+      return this.response.success(res, payload);
+    } catch (error) {
+      this.config.enableLogs && console.info(`Error in ${req.path}: `, error);
+      return this.response.error(res, { error: INTERNAL_SERVER_ERROR });
     }
   }
 

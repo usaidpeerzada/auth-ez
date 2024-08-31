@@ -10,6 +10,7 @@ export declare const REGISTER = "/register";
 export declare const LOGOUT = "/logout";
 export declare const VERIFY_EMAIL = "/verify-email";
 export declare const RESEND_VERIFICATION_EMAIL = "/resend-verification-email";
+export declare const REFRESH_TOKEN_ROUTE = "/refresh-token";
 export declare const REQUIRED_FIELDS = "All fields are required!";
 export declare const USER_NOT_FOUND = "User not found!";
 export declare const LOGIN_SUCCESSFUL = "Login successful";

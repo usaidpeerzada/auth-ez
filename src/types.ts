@@ -26,6 +26,7 @@ export type Config = {
     logoutRoute?: string;
     verifyEmail?: string;
     resendVerificationEmail?: string;
+    refreshToken?: string;
   };
   emailOptions?: {
     enableEmail: boolean;
@@ -37,6 +38,11 @@ export type Config = {
     verificationMailBody?: string;
     emailService?: EmailService;
   };
+  enableRefreshToken?: boolean;
+  refreshTokenOptions?: {
+    useCookie: boolean;
+    cookieOptions?: object;
+  };
 };
 
 export type ErrResponse = {
@@ -46,7 +52,8 @@ export type ErrResponse = {
 
 export type UpdateUser = {
   id: string | number;
-  password: string;
+  password?: string;
+  refreshToken?: string;
 };
 
 export type SaveUser = {
@@ -65,6 +72,7 @@ export type SuccessResponse = {
   [x: string]: any;
   message?: string | object;
   code?: number;
+  refreshToken?: string;
 };
 
 export type EmailOptions = {
