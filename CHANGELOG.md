@@ -38,4 +38,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Major Update!. Refresh token functionality.
+- Major Update!. Refresh token functionality, for more info check readme.md.
+
+## [1.1.1] - 2025-01-06
+
+### Added
+
+- Rate limiting. 
+- Password validation for strong passwords.
