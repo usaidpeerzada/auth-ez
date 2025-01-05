@@ -1,5 +1,4 @@
 import express, { Request, Response, Router } from 'express';
-import IAuthEZDataStore from './authEZDataStore';
 import {
   comparePasswords,
   generateRefreshToken,
@@ -7,6 +6,7 @@ import {
   hashPassword,
   isNullOrEmpty,
   markEmailAsVerified,
+  validatePassword,
   verifyRefreshToken,
   verifyToken,
 } from './utils';
@@ -43,12 +43,16 @@ import {
   VERIFY_EMAIL,
   RESEND_VERIFICATION_EMAIL,
   REFRESH_TOKEN_ROUTE,
+  PASSWORD_VAL_ERR,
+  RATE_LIMIT_ERR,
+  RATE_LIMIT_IP_ERR,
 } from './constants';
 import NodemailerEmailService from './emails/nodemailerEmailService';
 import { protectedRoutes } from './utils';
 import ResponseController from './responseController';
+import rateLimit from 'express-rate-limit';
 
-export default abstract class AuthController implements IAuthEZDataStore {
+export default abstract class AuthController {
   private readonly config: Config;
   private readonly router: Router;
   private readonly emailOptions: EmailOptions;
@@ -57,6 +61,13 @@ export default abstract class AuthController implements IAuthEZDataStore {
 
   constructor(config: Config) {
     this.config = config;
+    const limiter = rateLimit({
+      windowMs: config?.rateLimitOptions?.windowMs || 15 * 60 * 1000, // 15 minutes
+      max: config?.rateLimitOptions?.max || 10,
+      message: {
+        message: RATE_LIMIT_IP_ERR,
+      },
+    });
     const routes = {
       emailLoginRoute:
         config.routeNames?.loginWithEmailRoute || LOGIN_WITH_EMAIL,
@@ -75,6 +86,7 @@ export default abstract class AuthController implements IAuthEZDataStore {
       config.routeNames?.resendVerificationEmail || RESEND_VERIFICATION_EMAIL;
     this.router = express.Router();
     this.router.use(express.json());
+    this.router.use(limiter);
     this.router.use(protectedRoutes(routes, config.User));
     this.User = config.User;
     this.emailOptions = this.config.emailOptions;
@@ -167,6 +179,11 @@ export default abstract class AuthController implements IAuthEZDataStore {
         password,
         user?.password,
       );
+      if (user.lockUntil && user.lockUntil > Date.now()) {
+        return this.response.unauthorized(res, {
+          error: RATE_LIMIT_ERR,
+        });
+      }
       if (user && comparePasswordWithHash) {
         const token = generateToken(
           { userId: user._id || user.id },
@@ -203,6 +220,17 @@ export default abstract class AuthController implements IAuthEZDataStore {
         }
         return this.response.success(res, payload);
       } else {
+        await this.updateUser({
+          id: user._id || user.id,
+          loginAttempts: user.loginAttempts + 1,
+        });
+
+        if (user.loginAttempts >= 5) {
+          await this.updateUser({
+            id: user._id || user.id,
+            lockUntil: Date.now() + 60 * 60 * 1000, // 1 hour
+          });
+        }
         return this.response.unauthorized(res, {
           error: INVALID_CREDENTIALS,
         });
@@ -319,6 +347,12 @@ export default abstract class AuthController implements IAuthEZDataStore {
       const { newPassword } = req.body;
       const { token } = req.query;
       const payload = verifyToken(token.toString());
+      if (!validatePassword(newPassword)) {
+        this.response.clientError(res, {
+          error: PASSWORD_VAL_ERR,
+        });
+        return;
+      }
       const user = await this.getUser({ id: payload.userId });
       if (user) {
         const hashedPassword = await this.hashPassword(newPassword);
@@ -341,6 +375,12 @@ export default abstract class AuthController implements IAuthEZDataStore {
       const { username, email, password } = req.body;
       if (!email || !username || !password) {
         this.response.clientError(res, { error: REQUIRED_FIELDS });
+        return;
+      }
+      if (!validatePassword(password)) {
+        this.response.clientError(res, {
+          error: PASSWORD_VAL_ERR,
+        });
         return;
       }
       const existingUser = await this.getUser({
@@ -424,7 +464,7 @@ export default abstract class AuthController implements IAuthEZDataStore {
     }
   }
 
-  async resendVerificationEmail(req, res: Response): Promise<void> {
+  async resendVerificationEmail(req: Request, res: Response): Promise<void> {
     try {
       const userId = req.body.id;
       const user = await this.getUser({ id: userId });

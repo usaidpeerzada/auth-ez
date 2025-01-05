@@ -4,6 +4,8 @@ export interface IUser {
     username: string;
     password: string;
     email: string;
+    loginAttempts: number;
+    lockUntil: number;
 }
 export type Config = {
     User: any;
@@ -37,8 +39,12 @@ export type Config = {
     };
     enableRefreshToken?: boolean;
     refreshTokenOptions?: {
-        useCookie: boolean;
+        useCookie?: boolean;
         cookieOptions?: object;
+    };
+    rateLimitOptions?: {
+        windowMs?: number;
+        max?: number;
     };
 };
 export type ErrResponse = {
@@ -49,6 +55,8 @@ export type UpdateUser = {
     id: string | number;
     password?: string;
     refreshToken?: string;
+    loginAttempts?: number;
+    lockUntil?: number;
 };
 export type SaveUser = {
     username: string;
@@ -83,3 +91,10 @@ export type EmailParams = {
     mailSubject?: string;
     mailBody?: string;
 };
+export interface PasswordValidationRules {
+    minLength: number;
+    requireUppercase: boolean;
+    requireLowercase: boolean;
+    requireNumbers: boolean;
+    requireSpecialChars: boolean;
+}

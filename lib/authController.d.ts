@@ -1,7 +1,6 @@
 import { Request, Response, Router } from 'express';
-import IAuthEZDataStore from './authEZDataStore';
 import { Config, GetUser, SaveUser, UpdateUser, IUser } from './types';
-export default abstract class AuthController implements IAuthEZDataStore {
+export default abstract class AuthController {
     private readonly config;
     private readonly router;
     private readonly emailOptions;
@@ -21,7 +20,7 @@ export default abstract class AuthController implements IAuthEZDataStore {
     signUpRoute(req: Request, res: Response): Promise<void>;
     logoutRoute(req: Request, res: Response): void;
     verifyEmail(req: Request, res: Response): Promise<void>;
-    resendVerificationEmail(req: any, res: Response): Promise<void>;
+    resendVerificationEmail(req: Request, res: Response): Promise<void>;
     refreshToken(req: Request, res: Response): Promise<Response>;
     getRouter(): Router;
 }

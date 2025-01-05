@@ -23,3 +23,8 @@ export const UNAUTHORIZED = 'Unauthorized';
 export const USER_REGISTERED_SUCCESSFULLY = 'User registered successfully';
 export const USERNAME_ALREADY_EXISTS = 'Username or email already exists';
 export const PASSWORD_RESET_SUCCESSFUL = 'Password reset successful';
+export const PASSWORD_VAL_ERR =
+  'Password must be at least 8 characters long, and contain at least one uppercase letter, one lowercase letter, one number, and one special character';
+export const RATE_LIMIT_ERR = 'Account is temporarily locked. Try again later';
+export const RATE_LIMIT_IP_ERR =
+  'Too many requests from this IP, please try again later';

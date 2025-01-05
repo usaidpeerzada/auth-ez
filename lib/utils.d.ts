@@ -12,3 +12,4 @@ export declare function markEmailAsVerified(userId: string, User: any): Promise<
 export declare function generateRefreshToken(userId: string): string;
 export declare function verifyRefreshToken(token: string): any;
 export declare function isNullOrEmpty(value: any): boolean;
+export declare function validatePassword(password: string): boolean;

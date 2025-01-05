@@ -57,6 +57,7 @@ The configuration options include:
 6. enableLogs: Enable logging (optional).
 7. enableRefreshToken: To enable refresh token functionality.
 8. refreshTokenOptions: Options for refresh token (check example below).
+9. rateLimitOptions: Default rate limit options has 10 allowed requests and 15 minutes of request lock, you can customize it.
 
 ## Email
 
@@ -95,6 +96,9 @@ updateUser(params: UpdateUser): Promise<IUser>
 ## Error Handling
 
 auth-ez handles various errors, including missing fields, user not found, invalid credentials, and internal server errors.
+
+## Password Validation
+auth-ez handles password validation for strong passwords. By default, it requires a password to have at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character.
 
 ## Examples
 
@@ -144,6 +148,10 @@ const config = {
     useCookie: true, // Store refresh token in cookies (optional)
     cookieOptions: { httpOnly: true, secure: true, sameSite: 'strict' }, // Customize cookie settings (optional)
   },
+  rateLimitOptions: {
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5 // 5 maximum requests
+  }
 };
 
 const authController = new AuthController(config).getRouter();
